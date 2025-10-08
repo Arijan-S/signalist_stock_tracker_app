@@ -35,3 +35,18 @@ export const signUpWithEmail = async (
 
   return response.json();
 };
+
+export const signOut = async () => {
+  const response = await fetch("/api/auth/sign-out", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Sign out failed");
+  }
+
+  return response.json();
+};
