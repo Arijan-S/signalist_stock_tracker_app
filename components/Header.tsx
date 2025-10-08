@@ -3,7 +3,7 @@ import Link from "next/link";
 import NavItems from "./NavItems";
 import UserDropdown from "./UserDropdown";
 
-const Header = () => {
+const Header = ({ user }: { user?: User | null }) => {
   return (
     <header className="sticky top-0 header">
       <div className="container header-wrapper">
@@ -16,15 +16,13 @@ const Header = () => {
             className="h-8 w-auto cursor-pointer"
           />
         </Link>
-
         <nav className="hidden sm:block">
           <NavItems />
         </nav>
 
-        <UserDropdown />
+        <UserDropdown user={user || undefined} initialStocks={[]} />
       </div>
     </header>
   );
 };
-
 export default Header;

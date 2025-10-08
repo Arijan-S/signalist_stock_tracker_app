@@ -4,14 +4,12 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/inputField";
 import FooterLink from "@/components/forms/FooterLink";
+import { toast } from "sonner";
+import { signInWithEmail } from "@/lib/client-auth";
 import { useRouter } from "next/navigation";
 
-type SignInFormData = {
-  email: string;
-  password: string;
-};
-
 const SignIn = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -24,14 +22,19 @@ const SignIn = () => {
     mode: "onBlur",
   });
 
-  const router = useRouter();
-
   const onSubmit = async (data: SignInFormData) => {
     try {
-      console.log("Sign in", data);
-      // router.push("/dashboard"); // example navigation
+      const response = await signInWithEmail(data.email, data.password);
+
+      if (response) {
+        router.push("/");
+        toast.success("Successfully signed in!");
+      }
     } catch (e) {
       console.error(e);
+      toast.error("Sign in failed", {
+        description: e instanceof Error ? e.message : "Failed to sign in.",
+      });
     }
   };
 
@@ -43,7 +46,7 @@ const SignIn = () => {
         <InputField
           name="email"
           label="Email"
-          placeholder="contact@jsmastery.com"
+          placeholder="johndoe@gmail.com"
           register={register}
           error={errors.email}
           validation={{
@@ -67,7 +70,7 @@ const SignIn = () => {
           disabled={isSubmitting}
           className="yellow-btn w-full mt-5"
         >
-          {isSubmitting ? "Signing In..." : "Sign In"}
+          {isSubmitting ? "Signing In" : "Sign In"}
         </Button>
 
         <FooterLink
@@ -79,5 +82,4 @@ const SignIn = () => {
     </>
   );
 };
-
 export default SignIn;
