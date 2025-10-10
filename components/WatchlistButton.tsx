@@ -1,9 +1,10 @@
 "use client";
-import React, { useMemo, useState } from "react";
-
-// Minimal WatchlistButton implementation to satisfy page requirements.
-// This component focuses on UI contract only. It toggles local state and
-// calls onWatchlistChange if provided. Styling hooks match globals.css.
+import React, { useMemo, useState, useTransition } from "react";
+import {
+  addToWatchlist,
+  removeFromWatchlist,
+} from "@/lib/actions/watchlist.actions";
+import { toast } from "sonner";
 
 const WatchlistButton = ({
   symbol,
@@ -14,16 +15,47 @@ const WatchlistButton = ({
   onWatchlistChange,
 }: WatchlistButtonProps) => {
   const [added, setAdded] = useState<boolean>(!!isInWatchlist);
+  const [isPending, startTransition] = useTransition();
 
   const label = useMemo(() => {
     if (type === "icon") return added ? "" : "";
     return added ? "Remove from Watchlist" : "Add to Watchlist";
   }, [added, type]);
 
-  const handleClick = () => {
-    const next = !added;
-    setAdded(next);
-    onWatchlistChange?.(symbol, next);
+  const handleClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    startTransition(async () => {
+      const next = !added;
+
+      try {
+        if (next) {
+          const result = await addToWatchlist(symbol, company);
+          if (result.success) {
+            setAdded(true);
+            toast.success(`${symbol} added to watchlist`);
+            onWatchlistChange?.(symbol, true);
+          } else {
+            toast.error(result.error || "Failed to add to watchlist");
+          }
+        } else {
+          const result = await removeFromWatchlist(symbol);
+          if (result.success) {
+            setAdded(false);
+            toast.success(`${symbol} removed from watchlist`);
+            onWatchlistChange?.(symbol, false);
+          } else {
+            toast.error(result.error || "Failed to remove from watchlist");
+          }
+        }
+      } catch (error) {
+        toast.error("An error occurred");
+        console.error(error);
+      }
+    });
   };
 
   if (type === "icon") {
@@ -41,6 +73,7 @@ const WatchlistButton = ({
         }
         className={`watchlist-icon-btn ${added ? "watchlist-icon-added" : ""}`}
         onClick={handleClick}
+        disabled={isPending}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -62,8 +95,13 @@ const WatchlistButton = ({
 
   return (
     <button
-      className={`watchlist-btn ${added ? "watchlist-remove" : ""}`}
+      className={`px-4 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap flex items-center gap-2 ${
+        added
+          ? "bg-red-500 hover:bg-red-600 text-white"
+          : "bg-yellow-500 hover:bg-yellow-400 text-gray-900"
+      } ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
       onClick={handleClick}
+      disabled={isPending}
     >
       {showTrashIcon && added ? (
         <svg
@@ -72,7 +110,7 @@ const WatchlistButton = ({
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="w-5 h-5 mr-2"
+          className="w-4 h-4"
         >
           <path
             strokeLinecap="round"

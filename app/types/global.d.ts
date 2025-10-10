@@ -71,6 +71,7 @@ declare global {
     id: string;
     name: string;
     email: string;
+    image?: string | null;
   };
 
   type Stock = {
@@ -129,6 +130,12 @@ declare global {
     symbol: string;
     company: string;
     currentPrice?: number;
+  };
+
+  type WatchlistItem = {
+    symbol: string;
+    company: string;
+    addedAt: Date;
   };
 
   type WatchlistTableProps = {

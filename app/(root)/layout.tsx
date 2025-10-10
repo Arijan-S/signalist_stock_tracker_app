@@ -1,15 +1,33 @@
 import Header from "@/components/Header";
-import { getCurrentUser } from "@/lib/actions/auth.actions";
+import Footer from "@/components/Footer";
+import { auth } from "@/lib/better-auth/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-const layout = async ({ children }: { children: React.ReactNode }) => {
-  const user = await getCurrentUser();
+const Layout = async ({ children }: { children: React.ReactNode }) => {
+  const session = await (
+    await auth
+  ).api.getSession({ headers: await headers() });
+
+  if (!session?.user) redirect("/sign-in");
+
+  const user = {
+    id: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    image: session.user.image,
+  };
 
   return (
-    <main className="min-h-screen text-gray-400">
+    <div className="flex flex-col min-h-screen text-gray-400">
       <Header user={user} />
-      <div className="container py-10">{children}</div>
-    </main>
+
+      <main className="flex-1">
+        <div className="container py-10">{children}</div>
+      </main>
+
+      <Footer />
+    </div>
   );
 };
-
-export default layout;
+export default Layout;

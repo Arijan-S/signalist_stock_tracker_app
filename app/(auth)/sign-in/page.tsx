@@ -5,8 +5,13 @@ import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/inputField";
 import FooterLink from "@/components/forms/FooterLink";
 import { toast } from "sonner";
-import { signInWithEmail } from "@/lib/client-auth";
 import { useRouter } from "next/navigation";
+import { signInWithEmail } from "@/lib/actions/auth.actions";
+
+type SignInFormData = {
+  email: string;
+  password: string;
+};
 
 const SignIn = () => {
   const router = useRouter();
@@ -24,14 +29,24 @@ const SignIn = () => {
 
   const onSubmit = async (data: SignInFormData) => {
     try {
-      const response = await signInWithEmail(data.email, data.password);
+      console.log("Submitting sign in with data:", data);
+      const response = await signInWithEmail(data);
 
-      if (response) {
-        router.push("/");
+      console.log("Sign in response:", response);
+
+      if (response && response.success) {
+        console.log("Sign in successful, redirecting...");
         toast.success("Successfully signed in!");
+        // Force a page refresh to ensure proper authentication state
+        window.location.href = "/";
+      } else {
+        console.log("Sign in failed:", response?.error);
+        toast.error("Sign in failed", {
+          description: response?.error || "Failed to sign in.",
+        });
       }
     } catch (e) {
-      console.error(e);
+      console.error("Sign in error:", e);
       toast.error("Sign in failed", {
         description: e instanceof Error ? e.message : "Failed to sign in.",
       });
@@ -51,7 +66,10 @@ const SignIn = () => {
           error={errors.email}
           validation={{
             required: "Email is required",
-            pattern: /^\w+@\w+\.\w+$/,
+            pattern: {
+              value: /^\w+@\w+\.\w+$/,
+              message: "Invalid email format",
+            },
           }}
         />
 
@@ -62,7 +80,13 @@ const SignIn = () => {
           type="password"
           register={register}
           error={errors.password}
-          validation={{ required: "Password is required", minLength: 8 }}
+          validation={{
+            required: "Password is required",
+            minLength: {
+              value: 8,
+              message: "Password must be at least 8 characters",
+            },
+          }}
         />
 
         <Button
@@ -70,7 +94,7 @@ const SignIn = () => {
           disabled={isSubmitting}
           className="yellow-btn w-full mt-5"
         >
-          {isSubmitting ? "Signing In" : "Sign In"}
+          {isSubmitting ? "Signing In..." : "Sign In"}
         </Button>
 
         <FooterLink
@@ -82,4 +106,5 @@ const SignIn = () => {
     </>
   );
 };
+
 export default SignIn;

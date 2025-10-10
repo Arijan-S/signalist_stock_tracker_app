@@ -1,21 +1,4 @@
 import { auth } from "@/lib/better-auth/auth";
+import { toNextJsHandler } from "better-auth/next-js";
 
-export const GET = async (req: Request) => {
-  const authInstance = await auth;
-  return authInstance.handler(req);
-};
-
-export const POST = async (req: Request) => {
-  const authInstance = await auth;
-  return authInstance.handler(req);
-};
-
-export const PUT = async (req: Request) => {
-  const authInstance = await auth;
-  return authInstance.handler(req);
-};
-
-export const DELETE = async (req: Request) => {
-  const authInstance = await auth;
-  return authInstance.handler(req);
-};
+export const { GET, POST } = toNextJsHandler(await auth);

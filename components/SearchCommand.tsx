@@ -104,7 +104,7 @@ export default function SearchCommand({
                 {isSearchMode ? "Search results" : "Popular stocks"}
                 {` `}({displayStocks?.length || 0})
               </div>
-              {displayStocks?.map((stock, i) => (
+              {displayStocks?.map((stock) => (
                 <li key={stock.symbol} className="search-item">
                   <Link
                     href={`/stocks/${stock.symbol}`}
@@ -118,7 +118,6 @@ export default function SearchCommand({
                         {stock.symbol} | {stock.exchange} | {stock.type}
                       </div>
                     </div>
-                    {/*<Star />*/}
                   </Link>
                 </li>
               ))}
